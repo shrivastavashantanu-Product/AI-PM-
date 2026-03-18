@@ -1,0 +1,14 @@
+{
+  "name": "ai-pm-remote-control",
+  "version": "1.0.0",
+  "description": "Claude Code remote control project scaffold",
+  "scripts": {
+    "remote": "claude --remote-control",
+    "remote:server": "claude remote-control",
+    "remote:server:worktree": "claude remote-control --spawn worktree",
+    "remote:named": "claude remote-control --name \"AI-PM Session\""
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
