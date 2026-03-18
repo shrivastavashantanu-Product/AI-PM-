@@ -15,7 +15,4 @@ echo "Capacity:    $CAPACITY concurrent sessions"
 echo "Connect at:  https://claude.ai/code"
 echo ""
 
-claude remote-control \
-  --name "$NAME" \
-  --spawn "$SPAWN" \
-  --capacity "$CAPACITY"
+exec claude --name "$NAME"

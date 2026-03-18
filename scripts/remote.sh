@@ -10,4 +10,4 @@ echo "Starting interactive remote-control session: $NAME"
 echo "Connect at: https://claude.ai/code"
 echo ""
 
-claude --remote-control "$NAME"
+exec claude --name "$NAME"
