@@ -39,14 +39,14 @@ export const useStore = create<Store>((set) => ({
     })),
 
   feedbackRecords: PAST_FEEDBACK,
-  addFeedback: (f) => set((state) => ({ feedbackRecords: [f, ...state.feedbackRecords] })),
+  addFeedback: (f: FeedbackRecord) => set((state: Store) => ({ feedbackRecords: [f, ...state.feedbackRecords] })),
 
   plannerBiasScore: 0.22,
-  setPlannerBiasScore: (score) => set({ plannerBiasScore: score }),
+  setPlannerBiasScore: (score: number) => set({ plannerBiasScore: score }),
 
   modelAccuracy: 0.934,
-  setModelAccuracy: (acc) => set({ modelAccuracy: acc }),
+  setModelAccuracy: (acc: number) => set({ modelAccuracy: acc }),
 
   pendingDecision: null,
-  setPendingDecision: (d) => set({ pendingDecision: d }),
+  setPendingDecision: (d: Decision | null) => set({ pendingDecision: d }),
 }))
