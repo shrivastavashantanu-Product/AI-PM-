@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MetricCard from '../components/ui/MetricCard'
 import StatusBadge from '../components/ui/StatusBadge'
 import StreamingText from '../components/ui/StreamingText'
 import AgentThinkingLoader from '../components/ui/AgentThinkingLoader'
+import ApiKeyPrompt from '../components/ui/ApiKeyPrompt'
 import { useStore } from '../store/useStore'
 import { CRITICAL_SKUS, TOTAL_SKUS, WARNING_SKU_COUNT, HEALTHY_SKU_COUNT } from '../data/mockData'
-import { runPlannerAgent } from '../lib/claudeAgent'
+import { runPlannerAgent, getApiKey } from '../lib/claudeAgent'
 import type { SKU } from '../types'
 
 export default function Dashboard() {
@@ -16,6 +17,8 @@ export default function Dashboard() {
   const [isStreaming, setIsStreaming] = useState(false)
   const [agentStarted, setAgentStarted] = useState(false)
   const [agentError, setAgentError] = useState('')
+  const [showKeyPrompt, setShowKeyPrompt] = useState(false)
+  const [hasKey, setHasKey] = useState(!!getApiKey())
 
   const handleSKUClick = (sku: SKU) => {
     setSelectedSKU(sku)
@@ -169,27 +172,51 @@ export default function Dashboard() {
             I monitor all 14,000 SKUs and surface the highest-risk items requiring your attention.
           </p>
 
+          {showKeyPrompt && (
+            <div className="mb-3">
+              <ApiKeyPrompt onSaved={() => { setHasKey(true); setShowKeyPrompt(false) }} />
+            </div>
+          )}
+
           {!agentStarted ? (
-            <button
-              onClick={startAgent}
-              className="w-full py-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              Run Planner Agent
-            </button>
+            <div className="space-y-2">
+              <button
+                onClick={startAgent}
+                className="w-full py-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Run Planner Agent
+              </button>
+              {!hasKey && !showKeyPrompt && (
+                <button
+                  onClick={() => setShowKeyPrompt(true)}
+                  className="w-full py-2 rounded-lg border border-amber-500/30 text-amber-400 text-xs font-medium hover:bg-amber-500/10 transition-colors"
+                >
+                  🔑 Configure API Key
+                </button>
+              )}
+            </div>
           ) : (
             <div className="flex-1 overflow-auto">
               {isStreaming && !agentText && (
                 <AgentThinkingLoader agentName="Planner Agent" color="amber" />
               )}
               {agentError ? (
-                <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-                  {agentError}
-                  <br />
-                  <span className="text-gray-500">Add VITE_ANTHROPIC_API_KEY to .env to enable AI agents.</span>
+                <div className="space-y-3">
+                  <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+                    {agentError}
+                  </div>
+                  {!showKeyPrompt && (
+                    <button
+                      onClick={() => setShowKeyPrompt(true)}
+                      className="w-full py-2 rounded-lg border border-amber-500/30 text-amber-400 text-xs font-medium hover:bg-amber-500/10 transition-colors"
+                    >
+                      🔑 Configure API Key
+                    </button>
+                  )}
                 </div>
               ) : (
                 <StreamingText text={agentText} isStreaming={isStreaming} />

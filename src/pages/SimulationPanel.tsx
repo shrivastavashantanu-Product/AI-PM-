@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 import StreamingText from '../components/ui/StreamingText'
 import AgentThinkingLoader from '../components/ui/AgentThinkingLoader'
+import ApiKeyPrompt from '../components/ui/ApiKeyPrompt'
 import StockoutRiskChart from '../components/charts/StockoutRiskChart'
-import { runCriticAgent } from '../lib/claudeAgent'
+import { runCriticAgent, getApiKey } from '../lib/claudeAgent'
 import { CRITICAL_SKUS } from '../data/mockData'
 import type { FeedbackRecord, Outcome } from '../types'
 
@@ -23,6 +24,8 @@ export default function SimulationPanel() {
   const [agentStarted, setAgentStarted] = useState(false)
   const [agentError, setAgentError] = useState('')
   const [executed, setExecuted] = useState(false)
+  const [showKeyPrompt, setShowKeyPrompt] = useState(false)
+  const [hasKey, setHasKey] = useState(!!getApiKey())
 
   const sku = selectedSKU ?? CRITICAL_SKUS[0]
   const decision = pendingDecision ?? decisions[0]
@@ -237,25 +240,50 @@ export default function SimulationPanel() {
             I am the trust layer. I justify every recommendation and simulate what happens if you do something different.
           </p>
 
+          {showKeyPrompt && (
+            <div className="mb-3">
+              <ApiKeyPrompt onSaved={() => { setHasKey(true); setShowKeyPrompt(false) }} />
+            </div>
+          )}
+
           {!agentStarted ? (
-            <button
-              onClick={startAgent}
-              className="w-full py-3 rounded-lg bg-purple-700 hover:bg-purple-600 text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Why this recommendation?
-            </button>
+            <div className="space-y-2">
+              <button
+                onClick={startAgent}
+                className="w-full py-3 rounded-lg bg-purple-700 hover:bg-purple-600 text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Why this recommendation?
+              </button>
+              {!hasKey && !showKeyPrompt && (
+                <button
+                  onClick={() => setShowKeyPrompt(true)}
+                  className="w-full py-2 rounded-lg border border-amber-500/30 text-amber-400 text-xs font-medium hover:bg-amber-500/10 transition-colors"
+                >
+                  🔑 Configure API Key
+                </button>
+              )}
+            </div>
           ) : (
             <div className="flex-1 overflow-auto">
               {isStreaming && !agentText && (
                 <AgentThinkingLoader agentName="Critic Agent" color="purple" />
               )}
               {agentError ? (
-                <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-                  {agentError}
-                  <br /><span className="text-gray-500">Add VITE_ANTHROPIC_API_KEY to .env</span>
+                <div className="space-y-3">
+                  <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+                    {agentError}
+                  </div>
+                  {!showKeyPrompt && (
+                    <button
+                      onClick={() => setShowKeyPrompt(true)}
+                      className="w-full py-2 rounded-lg border border-amber-500/30 text-amber-400 text-xs font-medium hover:bg-amber-500/10 transition-colors"
+                    >
+                      🔑 Configure API Key
+                    </button>
+                  )}
                 </div>
               ) : (
                 <StreamingText text={agentText} isStreaming={isStreaming} />

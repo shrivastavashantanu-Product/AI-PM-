@@ -1,10 +1,18 @@
 import Anthropic from '@anthropic-ai/sdk'
 import type { SKU, Decision } from '../types'
 
+export function getApiKey(): string {
+  return import.meta.env.VITE_ANTHROPIC_API_KEY || localStorage.getItem('ANTHROPIC_API_KEY') || ''
+}
+
+export function setApiKey(key: string) {
+  localStorage.setItem('ANTHROPIC_API_KEY', key)
+}
+
 function getClient() {
-  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY
+  const apiKey = getApiKey()
   if (!apiKey) {
-    throw new Error('VITE_ANTHROPIC_API_KEY is not set. Add it to your .env file.')
+    throw new Error('API key not set. Click "Configure API Key" in the agent panel to add your Anthropic API key.')
   }
   return new Anthropic({ apiKey, dangerouslyAllowBrowser: true })
 }
